@@ -293,13 +293,6 @@ export default function Index() {
           </Card>
         </InlineGrid>
 
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="primary" onClick={handleSaveClick}>
-            Sauvegarder
-          </Button>
-        </div>
-
       </BlockStack>
     </Page>
   );
