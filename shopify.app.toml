@@ -2,7 +2,7 @@
 
 name = "Notification De Stock"
 client_id = "3ed45186bd7cce0a10131ac4962988fb"
-application_url = "https://minute-kelkoo-direct-msg.trycloudflare.com"
+application_url = "https://loads-socket-jessica-put.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -11,10 +11,10 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://minute-kelkoo-direct-msg.trycloudflare.com/auth/callback",
-  "https://minute-kelkoo-direct-msg.trycloudflare.com/auth/shopify/callback",
-  "https://minute-kelkoo-direct-msg.trycloudflare.com/api/auth/callback",
-  "https://minute-kelkoo-direct-msg.trycloudflare.com/.shopify/graphiql/auth/callback"
+  "https://loads-socket-jessica-put.trycloudflare.com/auth/callback",
+  "https://loads-socket-jessica-put.trycloudflare.com/auth/shopify/callback",
+  "https://loads-socket-jessica-put.trycloudflare.com/api/auth/callback",
+  "https://loads-socket-jessica-put.trycloudflare.com/.shopify/graphiql/auth/callback"
 ]
 
 [webhooks]
