@@ -209,9 +209,17 @@ export default function Index() {
   }, [actionData]);
 
   const handleSaveClick = async () => {
-    // Optimistically update the local state with the new SKUs and Emails
-    const newSkus = productSKUValue.split(',').map(sku => ({ id: Date.now().toString(), sku: sku.trim() })).filter(sku => sku.sku);
-    const newEmails = emailValue.split(',').map(email => ({ id: Date.now().toString(), email: email.trim() })).filter(email => email);
+    // Only add non-empty and valid SKUs to the newSkus
+    const newSkus = productSKUValue
+      .split(',')
+      .map(sku => ({ id: Date.now().toString(), sku: sku.trim() }))
+      .filter(sku => sku.sku);
+  
+    // Only add non-empty and valid emails to the newEmails
+    const newEmails = emailValue
+      .split(',')
+      .map(email => ({ id: Date.now().toString(), email: email.trim() }))
+      .filter(email => email.email && isValidEmail(email.email));
   
     // Update the state as if the SKUs and Emails were already added
     setCurrentSkus(prev => [...prev, ...newSkus]);
@@ -236,8 +244,11 @@ export default function Index() {
       // If the submission fails, roll back the optimistic updates
       console.error('Failed to save SKUs or Emails:', error);
       // Roll back state changes or notify the user as needed
+      setCurrentSkus(skus); // Revert to original skus from loader
+      setCurrentEmails(emails); // Revert to original emails from loader
     }
   };
+  
   
   
   
@@ -324,11 +335,18 @@ export default function Index() {
                 <InlineError key={index} message={`Invalid email format: ${error}`} fieldID="emailField" />
               ))}
 
-              <div style={{ marginBottom: '1rem' }}>
-                {emails.map((email: { id: React.Key | null | undefined; email: string | undefined; }) => (
-                  <Badge key={email.id} tone="success">
-                    {email.email}
-                  </Badge>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                {currentEmails.map((email) => (
+                  <div key={email.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Badge tone="success">{email.email}</Badge>
+                    <button
+                      onClick={() => handleDeleteEmail(email.email)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      aria-label={`Delete ${email.email}`}
+                    >
+                      <Icon source={MobileCancelMajor} />
+                    </button>
+                  </div>
                 ))}
               </div>
 
