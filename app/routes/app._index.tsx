@@ -208,17 +208,38 @@ export default function Index() {
     }
   }, [actionData]);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
+    // Optimistically update the local state with the new SKUs and Emails
+    const newSkus = productSKUValue.split(',').map(sku => ({ id: Date.now().toString(), sku: sku.trim() })).filter(sku => sku.sku);
+    const newEmails = emailValue.split(',').map(email => ({ id: Date.now().toString(), email: email.trim() })).filter(email => email);
+  
+    // Update the state as if the SKUs and Emails were already added
+    setCurrentSkus(prev => [...prev, ...newSkus]);
+    setCurrentEmails(prev => [...prev, ...newEmails]);
+  
+    // Prepare the form data
     const formData = new FormData();
     formData.append('productSKU', productSKUValue);
     formData.append('email', emailValue);
     formData.append('minStock', minStockValue);
-  
     skusToDelete.forEach(sku => formData.append('skusToDelete', sku));
     emailsToDelete.forEach(email => formData.append('emailsToDelete', email));
   
-    submit(formData, { method: 'post' });
+    try {
+      // Submit the data to the server
+      const response = await submit(formData, { method: 'post' });
+  
+      // Check the response to ensure it was successful
+      // Handle any discrepancies between optimistic update and actual result here
+  
+    } catch (error) {
+      // If the submission fails, roll back the optimistic updates
+      console.error('Failed to save SKUs or Emails:', error);
+      // Roll back state changes or notify the user as needed
+    }
   };
+  
+  
   
 
 
