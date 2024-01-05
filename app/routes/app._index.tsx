@@ -290,7 +290,7 @@ export default function Index() {
                     <Badge tone="success">{sku.sku}</Badge>
                     <button
                       onClick={() => handleDeleteSku(sku.sku)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: '-10px' }}
                       aria-label={`Delete ${sku.sku}`}
                     >
                       <Icon source={MobileCancelMajor} />
@@ -341,7 +341,7 @@ export default function Index() {
                     <Badge tone="success">{email.email}</Badge>
                     <button
                       onClick={() => handleDeleteEmail(email.email)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: '-10px' }}
                       aria-label={`Delete ${email.email}`}
                     >
                       <Icon source={MobileCancelMajor} />
