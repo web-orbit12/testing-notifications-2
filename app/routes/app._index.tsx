@@ -20,8 +20,10 @@ import {
   TextField,
   useBreakpoints,
   Divider,
-  InlineError 
+  InlineError,
+  Icon
 } from "@shopify/polaris";
+import { MobileCancelMajor } from '@shopify/polaris-icons';
 import { authenticate } from "../shopify.server";
 
 
@@ -34,17 +36,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stockThreshold = await db.stockThreshold.findUnique({
     where: { id: 1 },
   });
-  
+
 
 
   // Return both authentication and SKU data
-  return json({ skus, emails, stockThreshold  });
+  return json({ skus, emails, stockThreshold });
 };
 
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  
+
   const productSKUs = formData.get('productSKU') || '';
   const emails = formData.get('email') || '';
   const minStockValue = formData.get('minStock');
@@ -66,7 +68,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           console.log(`SKU ${sku} already exists.`);
         }
       }
-    } 
+    }
 
     const emailErrors = []; // To track invalid emails
 
@@ -107,6 +109,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
     }
 
+    // Retrieve lists of SKUs and Emails to delete
+    const skusToDelete = formData.getAll('skusToDelete');
+    const emailsToDelete = formData.getAll('emailsToDelete');
+
+    // Delete SKUs
+    for (const sku of skusToDelete) {
+      if (typeof sku === 'string') {
+        await db.productSKU.deleteMany({
+          where: { sku },
+        });
+      }
+    }
+
+    // Delete Emails
+    for (const email of emailsToDelete) {
+      if (typeof email === 'string') {
+        await db.email.deleteMany({
+          where: { email },
+        });
+      }
+    }
+
 
   } catch (error: unknown) {
     // Handle errors here
@@ -124,11 +148,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 
 
-  
+
 function isValidEmail(email: string): boolean {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(String(email).toLowerCase());
-}   
+}
 
 
 
@@ -137,25 +161,45 @@ export default function Index() {
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const { smUp } = useBreakpoints();
+  
+  const { skus, emails, stockThreshold } = useLoaderData(); // Use the data from the loader
 
   const [productSKUValue, setProductSKUValue] = useState('');
   const [emailValue, setEmailValue] = useState('');
   const [emailErrors, setEmailErrors] = useState<string[]>([]);
   const [minStockValue, setMinStockValue] = useState('');
 
+  const [skusToDelete, setSkusToDelete] = useState<string[]>([]);
+  const [emailsToDelete, setEmailsToDelete] = useState<string[]>([]);
 
+  // Add local state to track current session's SKUs and Emails
+  const [currentSkus, setCurrentSkus] = useState(skus);
+  const [currentEmails, setCurrentEmails] = useState(emails);
+
+  const handleDeleteSku = (skuToDelete: string) => {
+    // Remove from the local display immediately
+    setCurrentSkus(currentSkus.filter(sku => sku.sku !== skuToDelete));
+    // Mark for deletion in the database on save
+    setSkusToDelete((prev) => [...prev, skuToDelete]);
+  };
+
+  // Similar for emails
+  const handleDeleteEmail = (emailToDelete: string) => {
+    setCurrentEmails(currentEmails.filter(email => email.email !== emailToDelete));
+    setEmailsToDelete((prev) => [...prev, emailToDelete]);
+  };
 
   const handleEmailChange = (value: string) => {
     setEmailValue(value);
-  
+
     // Split the input by commas and validate each email
     const emails = value.split(',').map(e => e.trim()).filter(e => e);
     const newEmailErrors = emails.filter(email => !isValidEmail(email));
-  
+
     // Update the emailErrors state
     setEmailErrors(newEmailErrors);
   };
-  
+
 
   useEffect(() => {
     // If the action returned errors, set them in state
@@ -165,23 +209,25 @@ export default function Index() {
   }, [actionData]);
 
   const handleSaveClick = () => {
-    // Create an object with the values from the state
-    const productInfo = {
-      productSKU: productSKUValue,
-      email: emailValue,
-      minStock: minStockValue,
-    };
+    const formData = new FormData();
+    formData.append('productSKU', productSKUValue);
+    formData.append('email', emailValue);
+    formData.append('minStock', minStockValue);
   
-    // Use 'submit' to send data to the server
-    submit(productInfo, { method: 'post' });
+    skusToDelete.forEach(sku => formData.append('skusToDelete', sku));
+    emailsToDelete.forEach(email => formData.append('emailsToDelete', email));
+  
+    submit(formData, { method: 'post' });
   };
+  
 
-  const { skus, emails, stockThreshold } = useLoaderData(); // Use the data from the loader
+
+
 
   return (
     <Page>
       <ui-title-bar title="Settings">
-        <button variant="primary"  onClick={handleSaveClick}>
+        <button variant="primary" onClick={handleSaveClick}>
           Sauvegarder
         </button>
       </ui-title-bar>
@@ -206,15 +252,24 @@ export default function Index() {
                 onChange={(value) => setProductSKUValue(value)}
                 autoComplete="off"
               />
-              <div style={{ marginBottom: '1rem' }}>
-                {skus.map((sku: { id: React.Key | null | undefined; sku: string | undefined; }) => (
-                  <Badge key={sku.id} tone="success">
-                    {sku.sku}
-                  </Badge>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                {currentSkus.map((sku: { id: string; sku: string }) => (
+                  <div key={sku.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Badge tone="success">{sku.sku}</Badge>
+                    <button
+                      onClick={() => handleDeleteSku(sku.sku)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      aria-label={`Delete ${sku.sku}`}
+                    >
+                      <Icon source={MobileCancelMajor} />
+                    </button>
+                  </div>
                 ))}
               </div>
+
             </BlockStack>
           </Card>
+
         </InlineGrid>
 
         <InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
