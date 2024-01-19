@@ -2,6 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
+import { JSONValue } from "node_modules/@shopify/shopify-app-remix/build/ts/server/types";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { topic, shop, session, admin, payload } = await authenticate.webhook(
@@ -20,7 +21,7 @@ type InventoryItem = {
   // Add other relevant fields here
 };
 
-function safeParseJSON(jsonString: string | object) {
+function safeParseJSON(jsonString: JSONValue | object) {
   if (typeof jsonString === 'string') {
     try {
       return JSON.parse(jsonString);
