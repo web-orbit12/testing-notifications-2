@@ -28,24 +28,12 @@ type InventoryItem = {
           console.log("SESSION DELETED");
         }
         break;
-      case 'INVENTORY_LEVELS_UPDATE':
-          // Assert that payload is a string before parsing
-          if (typeof payload === 'string') {
-            const inventoryData = JSON.parse(payload);
-            const stockThreshold = 10; // Example stock threshold
-        
-            // Example logic to check inventory levels
-            inventoryData.forEach( (item: InventoryItem) => {
-              if (item.available < stockThreshold) {
-                console.log(`Inventory for item ${item.id} is below threshold: ${item.available}`);
-                // Add more logic here if needed, e.g., sending alerts
-              }
-            });
-          } else {
-            console.error("Invalid payload type");
-          }
+      case "PRODUCTS_CREATE":
+          console.log("ITEM CREATED");
           break;
-  
+      case "PRODUCTS_DELETE":
+        console.log("ITEM DELETED");
+        break;
       case "CUSTOMERS_DATA_REQUEST":
       case "CUSTOMERS_REDACT":
       case "SHOP_REDACT":
