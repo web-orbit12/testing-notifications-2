@@ -1,24 +1,24 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-name = "Notification De Stock"
-client_id = "3ed45186bd7cce0a10131ac4962988fb"
-application_url = "https://loads-socket-jessica-put.trycloudflare.com"
+name = "notification-de-stock"
+client_id = "30fe162f7a0d6fb64322e16dc8e1a624"
+application_url = "https://broker-brings-mic-compressed.trycloudflare.com"
 embedded = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "write_products,read_products"
 
 [auth]
 redirect_urls = [
-  "https://loads-socket-jessica-put.trycloudflare.com/auth/callback",
-  "https://loads-socket-jessica-put.trycloudflare.com/auth/shopify/callback",
-  "https://loads-socket-jessica-put.trycloudflare.com/api/auth/callback",
-  "https://loads-socket-jessica-put.trycloudflare.com/.shopify/graphiql/auth/callback"
+  "https://broker-brings-mic-compressed.trycloudflare.com/auth/callback",
+  "https://broker-brings-mic-compressed.trycloudflare.com/auth/shopify/callback",
+  "https://broker-brings-mic-compressed.trycloudflare.com/api/auth/callback",
+  "https://broker-brings-mic-compressed.trycloudflare.com/.shopify/graphiql/auth/callback"
 ]
 
 [webhooks]
-api_version = "2023-10"
+api_version = "2024-01"
 
 [pos]
 embedded = false
