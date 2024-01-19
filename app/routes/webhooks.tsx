@@ -20,6 +20,22 @@ type InventoryItem = {
   // Add other relevant fields here
 };
 
+function safeParseJSON(jsonString: string | object) {
+  if (typeof jsonString === 'string') {
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return null;
+    }
+  } else {
+    // If it's not a string, just return it as is
+    return jsonString;
+  }
+}
+
+
+
   try {
     switch (topic) {
       case "APP_UNINSTALLED":
@@ -29,11 +45,32 @@ type InventoryItem = {
         }
         break;
       case "PRODUCTS_CREATE":
-          console.log("ITEM CREATED");
-          break;
+        console.log("ITEM CREATED");
+        break;
       case "PRODUCTS_DELETE":
         console.log("ITEM DELETED");
         break;
+      case "INVENTORY_LEVELS_UPDATE":
+        console.log("STOCK UPDATE TRIGGERED");
+
+        // Try to safely parse the payload
+        const inventoryData = safeParseJSON(payload);
+        console.log("Parsed Payload:", inventoryData);
+
+        if (inventoryData && typeof inventoryData === 'object') {
+          const stockThreshold = 10; // Example stock threshold
+          const { available, inventory_item_id } = inventoryData;
+
+          // Check if the inventory level is below the threshold
+          if (available < stockThreshold) {
+            console.log(`Inventory for item ${inventory_item_id} is below threshold: ${available}`);
+            // Add more logic here if needed, e.g., sending alerts
+          }
+        } else {
+          console.error("Invalid or unexpected inventory data format");
+        }
+        break;
+
       case "CUSTOMERS_DATA_REQUEST":
       case "CUSTOMERS_REDACT":
       case "SHOP_REDACT":
