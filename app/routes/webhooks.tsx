@@ -59,7 +59,16 @@ function safeParseJSON(jsonString: JSONValue | object) {
         console.log("Parsed Payload:", inventoryData);
 
         if (inventoryData && typeof inventoryData === 'object') {
-          const stockThreshold = 10; // Example stock threshold
+          const stockThresholdEntry = await db.stockThreshold.findUnique({
+            where: { id: 1 } // Assuming the threshold is stored with id 1
+          });
+      
+          if (!stockThresholdEntry) {
+            console.error("Stock threshold entry not found in database");
+            break;
+          }
+      
+          const stockThreshold = stockThresholdEntry.minStock;
           const { available, inventory_item_id } = inventoryData;
 
           // Check if the inventory level is below the threshold
