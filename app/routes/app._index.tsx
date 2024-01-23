@@ -239,6 +239,11 @@ export default function Index() {
   
       // Check the response to ensure it was successful
       // Handle any discrepancies between optimistic update and actual result here
+
+
+      shopify.toast.show('Changements sauvegardés', {
+        duration: 5000,
+      });      
   
     } catch (error) {
       // If the submission fails, roll back the optimistic updates
