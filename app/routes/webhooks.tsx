@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import { JSONValue } from "node_modules/@shopify/shopify-app-remix/build/ts/server/types";
+import nodemailer from 'nodemailer';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { topic, shop, session, admin, payload } = await authenticate.webhook(
