@@ -154,6 +154,12 @@ function isValidEmail(email: string): boolean {
   return re.test(String(email).toLowerCase());
 }
 
+// Define an interface for loader data
+interface LoaderData {
+  skus: { id: string; sku: string }[]; // Adjust this based on the actual structure of your skus
+  emails: { id: string; email: string }[]; // Adjust this based on the actual structure of your emails
+  stockThreshold: { id: number; minStock: any }; // Adjust this based on the actual structure of your stockThreshold
+}
 
 
 export default function Index() {
@@ -162,7 +168,8 @@ export default function Index() {
   const submit = useSubmit();
   const { smUp } = useBreakpoints();
   
-  const { skus, emails, stockThreshold } = useLoaderData(); // Use the data from the loader
+  const { skus, emails, stockThreshold } = useLoaderData<LoaderData>();
+
 
   const [productSKUValue, setProductSKUValue] = useState('');
   const [emailValue, setEmailValue] = useState('');
