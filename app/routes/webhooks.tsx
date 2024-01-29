@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Define the email sending function
-async function sendNotificationEmail(stockItem, recipientEmails) {
+async function sendNotificationEmail(stockItem: { available: any; inventory_item_id: any; }, recipientEmails: any[]) {
   const mailOptions = {
     from: '"Stock Alert" <test@digitalmonstr.com>', // sender address
     to: recipientEmails.join(','), // list of receivers
