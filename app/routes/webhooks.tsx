@@ -5,6 +5,40 @@ import db from "../db.server";
 import { JSONValue } from "node_modules/@shopify/shopify-app-remix/build/ts/server/types";
 import nodemailer from 'nodemailer';
 
+
+// Configure your SMTP transporter
+const transporter = nodemailer.createTransport({
+  host: 'mail.digitalmonstr.com',
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: 'test@digitalmonstr.com', // your email
+    pass: 'V=y]AIs=dr6s' // your password
+  }
+});
+
+// Define the email sending function
+async function sendNotificationEmail(stockItem, recipientEmails) {
+  const mailOptions = {
+    from: '"Stock Alert" <test@digitalmonstr.com>', // sender address
+    to: recipientEmails.join(','), // list of receivers
+    subject: `Stock Alert: Item ${stockItem.inventory_item_id}`,
+    text: `The stock for item ${stockItem.inventory_item_id} is below threshold. Items remaining: ${stockItem.available}`, // plain text body
+    html: `<b>The stock for item ${stockItem.inventory_item_id} is below threshold. Items remaining: ${stockItem.available}</b>`
+  };
+
+  try {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log('Message sent: %s', info.messageId);
+    });
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+}
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { topic, shop, session, admin, payload } = await authenticate.webhook(
     request
@@ -75,7 +109,13 @@ function safeParseJSON(jsonString: JSONValue | object) {
           // Check if the inventory level is below the threshold
           if (available < stockThreshold) {
             console.log(`Inventory for item ${inventory_item_id} is below threshold: ${available}`);
+            console.log(`Stock threshold: ${stockThreshold}` );
+           
             // Add more logic here if needed, e.g., sending alerts
+            const emailEntries = await db.email.findMany();
+            const recipientEmails = emailEntries.map(entry => entry.email);
+            console.log( "recipientEmails " + recipientEmails.join(',') );
+            await sendNotificationEmail({ available, inventory_item_id }, recipientEmails);
           }
         } else {
           console.error("Invalid or unexpected inventory data format");
