@@ -207,6 +207,16 @@ export default function Index() {
     setEmailErrors(newEmailErrors);
   };
 
+  const [tags, setTags] = useState([]);
+
+
+  const handleInputKeyPress = async (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Pour empêcher le formulaire de s'envoyer
+      await handleSaveClick(); // Appelle la fonction de sauvegarde après l'ajout
+    }
+  };
+  
 
   useEffect(() => {
     // If the action returned errors, set them in state
@@ -216,6 +226,8 @@ export default function Index() {
   }, [actionData]);
 
   const handleSaveClick = async () => {
+    console.log('Saving data'); // Log pour le débogage
+
     // Only add non-empty and valid SKUs to the newSkus
     const newSkus = productSKUValue
       .split(',')
@@ -289,13 +301,15 @@ export default function Index() {
           </Box>
           <Card roundedAbove="sm">
             <BlockStack gap="400">
-              <TextField
-                label="Product SKU"
-                name="productSKU"
-                value={productSKUValue}
-                onChange={(value) => setProductSKUValue(value)}
-                autoComplete="off"
-              />
+              <div onKeyDown={(event) => handleInputKeyPress(event)}>
+                <TextField
+                  label="Product SKU"
+                  name="productSKU"
+                  value={productSKUValue}
+                  onChange={(value) => setProductSKUValue(value)}
+                  autoComplete="off"
+                />
+              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                 {currentSkus.map((sku: { id: string; sku: string }) => (
                   <div key={sku.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -331,16 +345,16 @@ export default function Index() {
           </Box>
           <Card roundedAbove="sm">
             <BlockStack gap="400">
-
-
-              <TextField
-                label="Email"
-                name="email"
-                value={emailValue}
-                onChange={handleEmailChange}
-                autoComplete="off"
-                error={emailErrors.length > 0}
-              />
+              <div onKeyDown={(event) => handleInputKeyPress(event)}>
+                <TextField
+                  label="Email"
+                  name="email"
+                  value={emailValue}
+                  onChange={handleEmailChange}
+                  autoComplete="off"
+                  error={emailErrors.length > 0}
+                />
+              </div>
 
               {/* Displaying inline errors for email */}
               {emailErrors.map((error, index) => (
@@ -379,16 +393,17 @@ export default function Index() {
           </Box>
           <Card roundedAbove="sm">
             <BlockStack gap="400">
-
-              <TextField
-                label="Seuil de stock"
-                name="minStock"
-                value={minStockValue}
-                onChange={(value) => setMinStockValue(value)}
-                autoComplete="off"
-              />
+              <div onKeyDown={(event) => handleInputKeyPress(event)}>
+                <TextField
+                  label="Seuil de stock"
+                  name="minStock"
+                  value={minStockValue}
+                  onChange={(value) => setMinStockValue(value)}
+                  autoComplete="off"
+                />
+              </div>
+              
               {/* Display the current stock threshold value */}
-
               {stockThreshold && (
                 <div style={{ marginTop: '0.5rem' }}>
                   <Badge tone="info">{stockThreshold.minStock}</Badge>
