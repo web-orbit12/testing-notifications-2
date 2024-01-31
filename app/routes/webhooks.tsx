@@ -49,13 +49,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response("Shop not found or uninstalled", { status: 404 });
   }
 
-// Define a type for inventory item
-type InventoryItem = {
-  id: string;
-  available: number;
-  // Add other relevant fields here
-};
-
 function safeParseJSON(jsonString: JSONValue | object) {
   if (typeof jsonString === 'string') {
     try {
