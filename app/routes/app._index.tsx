@@ -6,20 +6,14 @@ import db from "../db.server"; // Assuming db is your Prisma client setup
 import { Prisma } from '@prisma/client';
 import {
   Page,
-  Layout,
   Text,
   Badge,
   Card,
-  Button,
   BlockStack,
   Box,
-  List,
-  Link,
-  InlineStack,
   InlineGrid,
   TextField,
   useBreakpoints,
-  Divider,
   InlineError,
   Icon
 } from "@shopify/polaris";
