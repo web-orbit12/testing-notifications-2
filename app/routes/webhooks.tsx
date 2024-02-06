@@ -49,19 +49,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response("Shop not found or uninstalled", { status: 404 });
   }
 
-function safeParseJSON(jsonString: JSONValue | object) {
-  if (typeof jsonString === 'string') {
-    try {
-      return JSON.parse(jsonString);
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-      return null;
+  // Try to safely parse the payload
+  function safeParseJSON(jsonString: JSONValue | object) {
+    if (typeof jsonString === 'string') {
+      try {
+        return JSON.parse(jsonString);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        return null;
+      }
+    } else {
+      // If it's not a string, just return it as is
+      return jsonString;
     }
-  } else {
-    // If it's not a string, just return it as is
-    return jsonString;
   }
-}
 
 
 
@@ -82,43 +83,69 @@ function safeParseJSON(jsonString: JSONValue | object) {
       case "INVENTORY_LEVELS_UPDATE":
         console.log("STOCK UPDATE TRIGGERED");
 
-        // Try to safely parse the payload
         const inventoryData = safeParseJSON(payload);
-        console.log("Parsed Payload:", inventoryData);
-
-        if (inventoryData && typeof inventoryData === 'object') {
-          const stockThresholdEntry = await db.stockThreshold.findUnique({
-            where: { id: 1 } // Assuming the threshold is stored with id 1
-          });
-      
-          if (!stockThresholdEntry) {
-            console.error("Stock threshold entry not found in database");
-            break;
-          }
-      
-          const stockThreshold = stockThresholdEntry.minStock;
-          const { available, inventory_item_id } = inventoryData;
-
-          // Check if the inventory level is below the threshold
-          if (available < stockThreshold) {
-            console.log(`Inventory for item ${inventory_item_id} is below threshold: ${available}`);
-            console.log(`Stock threshold: ${stockThreshold}` );
-           
-            // Add more logic here if needed, e.g., sending alerts
-            const emailEntries = await db.email.findMany();
-            const recipientEmails = emailEntries.map(entry => entry.email);
-            console.log( "recipientEmails " + recipientEmails.join(',') );
-            await sendNotificationEmail({ available, inventory_item_id }, recipientEmails);
-          }
-        } else {
+        if (!inventoryData || typeof inventoryData !== 'object') {
           console.error("Invalid or unexpected inventory data format");
+          break;
+        }
+
+        const { available, inventory_item_id } = inventoryData;
+
+        // Faire une requête GraphQL pour obtenir le SKU
+        const graphqlResponse = await admin.graphql(`
+            {
+              inventoryItem(id: "gid://shopify/InventoryItem/${inventory_item_id}") {
+                variant {
+                  sku
+                }
+              }
+            }
+          `);
+
+        // Convertir la réponse en JSON
+        const jsonResponse = await graphqlResponse.json();
+
+        // Accéder aux données de la réponse
+        const sku = jsonResponse.data.inventoryItem.variant.sku;
+
+        // Vérifier si le SKU est surveillé dans la base de données
+        const skuEntry = await db.productSKU.findUnique({
+          where: { sku }
+        });
+
+        if (!skuEntry) {
+          console.log(`SKU ${sku} not monitored.`);
+          break;
+        }
+
+        // Vérifier si le niveau de stock est en dessous du seuil
+        const stockThresholdEntry = await db.stockThreshold.findUnique({
+          where: { id: 1 }
+        });
+
+        // Vérifiez que stockThresholdEntry n'est pas null avant de continuer
+        if (!stockThresholdEntry) {
+          console.error("No stock threshold entry found in the database.");
+          break; // Sortez du case si aucun seuil de stock n'est trouvé
+        }
+
+        // À ce stade, stockThresholdEntry est garanti de ne pas être null
+        if (available < stockThresholdEntry.minStock) {
+          console.log(`Inventory for SKU ${sku} is below threshold: ${available}`);
+
+          // Récupérer les entrées d'email de la base de données
+          const emailEntries = await db.email.findMany();
+          const recipientEmails = emailEntries.map(entry => entry.email);
+
+          // Envoyer l'email de notification
+          await sendNotificationEmail({ available, inventory_item_id: sku }, recipientEmails);
         }
         break;
 
       case "CUSTOMERS_DATA_REQUEST":
       case "CUSTOMERS_REDACT":
       case "SHOP_REDACT":
-        // Handle other webhook topics as needed
+      // Handle other webhook topics as needed
         break;
       default:
         return new Response("Unhandled webhook topic", { status: 404 });
