@@ -17,7 +17,7 @@ import {
   InlineError,
   Icon
 } from "@shopify/polaris";
-import { MobileCancelMajor } from '@shopify/polaris-icons';
+import { XIcon } from '@shopify/polaris-icons';
 import { authenticate } from "../shopify.server";
 
 
@@ -313,7 +313,7 @@ export default function Index() {
                       style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: '-10px' }}
                       aria-label={`Delete ${sku.sku}`}
                     >
-                      <Icon source={MobileCancelMajor} />
+                      <Icon source={XIcon} />
                     </button>
                   </div>
                 ))}
@@ -364,7 +364,7 @@ export default function Index() {
                       style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: '-10px' }}
                       aria-label={`Delete ${email.email}`}
                     >
-                      <Icon source={MobileCancelMajor} />
+                      <Icon source={XIcon} />
                     </button>
                   </div>
                 ))}
